@@ -1,0 +1,17 @@
+<video
+    class="lemur-player-video {{ if current }}lemur-player-video-current{{ /if }}"
+    webkit-playsinline
+    {{ if airplay }} x-webkit-airplay="allow" {{ /if }}
+    playsinline
+    {{ if pic }}poster="{{ pic }}"{{ /if }}
+    {{ if preload }}preload="{{ preload }}"{{ /if }}
+    {{ if airplay }}
+    nosrc
+    {{ else if url }}
+    src="{{ url }}"
+    {{ /if }}
+    >
+    {{ if airplay }}
+    <source src="{{ url }}">
+    {{ /if}}
+</video>

@@ -1,0 +1,61 @@
+.lemur-player-danmaku {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    font-size: 26px;
+    font-weight: bold;
+    font-family: SimHei, "Microsoft JhengHei", Arial, Helvetica, sans-serif;
+    text-shadow: 1px 0 1px #000000,0 1px 1px #000000,0 -1px 1px #000000,-1px 0 1px #000000;
+    color: #ffffff;
+    .lemur-player-danmaku-item {
+        display: inline-block;
+        pointer-events: none;
+        user-select: none;
+        cursor: default;
+        white-space: nowrap;
+        &--preload {
+            position: absolute;
+            visibility: hidden;
+        }
+    }
+    .lemur-player-danmaku-right {
+        position: absolute;
+        right: 0;
+        transform: translateX(100%);
+        &.lemur-player-danmaku-move {
+            will-change: transform;
+            animation-name: 'danmaku';
+            animation-timing-function: linear;
+            animation-play-state: paused;
+        }
+    }
+    @keyframes danmaku {
+        from {
+            transform: translateX(100%);
+        }
+    }
+    .lemur-player-danmaku-top,
+    .lemur-player-danmaku-bottom {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        visibility: hidden;
+        transform: none !important;
+        &.lemur-player-danmaku-move {
+            will-change: visibility;
+            animation-name: 'danmaku-center';
+            animation-timing-function: linear;
+            animation-play-state: paused;
+        }
+    }
+    @keyframes danmaku-center {
+         from {
+             visibility: visible;
+         }
+         to {
+             visibility: visible;
+         }
+     }
+}

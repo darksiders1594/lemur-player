@@ -1,0 +1,31 @@
+.lemur-player-mask {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    display: none;
+    &.lemur-player-mask-show {
+        display: block;
+    }
+}
+
+.lemur-player-video-wrap {
+    position: relative;
+    background: #000;
+    font-size: 0;
+    width: 100%;
+    height: 100%;
+    .lemur-player-video {
+        width: 100%;
+        height: 100%;
+        display: none;
+    }
+    .lemur-player-video-current {
+        display: block;
+    }
+    .lemur-player-video-prepare {
+        display: none;
+    }
+}
