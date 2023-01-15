@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "axios": "^1.2.2",
-    "balloon-css": "^1.2.0",
     "promise-polyfill": "^8.2.3"
   },
   "browserslist": [

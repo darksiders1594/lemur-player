@@ -4,7 +4,7 @@ import volumeUp from '../assets/volume-up.svg';
 import volumeDown from '../assets/volume-down.svg';
 import volumeOff from '../assets/volume-off.svg';
 import full from '../assets/full.svg';
-import fullWeb from '../assets/full-web.svg';
+import theaterMode from '../assets/theater-mode.svg';
 import setting from '../assets/setting.svg';
 import right from '../assets/right.svg';
 import comment from '../assets/comment.svg';
@@ -21,7 +21,7 @@ const Icons = {
     volumeDown: volumeDown,
     volumeOff: volumeOff,
     full: full,
-    fullWeb: fullWeb,
+    theaterMode: theaterMode,
     setting: setting,
     right: right,
     comment: comment,

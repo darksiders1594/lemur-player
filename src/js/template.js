@@ -36,7 +36,7 @@ class Template {
         this.playedBarWrap = this.container.querySelector('.lemur-player-bar-wrap');
         this.playedBarTime = this.container.querySelector('.lemur-player-bar-time');
         this.danmaku = this.container.querySelector('.lemur-player-danmaku');
-        this.danmakuLoading = this.container.querySelector('.lemur-player-danloading');
+        this.danmakuLoading = this.container.querySelector('.lemur-player-danmaku-loading');
         this.video = this.container.querySelector('.lemur-player-video-current');
         this.bezel = this.container.querySelector('.lemur-player-bezel-icon');
         this.playButton = this.container.querySelector('.lemur-player-play-icon');
@@ -49,10 +49,10 @@ class Template {
         this.mask = this.container.querySelector('.lemur-player-mask');
         this.loop = this.container.querySelector('.lemur-player-setting-loop');
         this.loopToggle = this.container.querySelector('.lemur-player-setting-loop .lemur-player-toggle-setting-input');
-        this.showDanmaku = this.container.querySelector('.lemur-player-setting-showdan');
-        this.showDanmakuToggle = this.container.querySelector('.lemur-player-showdan-setting-input');
-        this.unlimitDanmaku = this.container.querySelector('.lemur-player-setting-danunlimit');
-        this.unlimitDanmakuToggle = this.container.querySelector('.lemur-player-danunlimit-setting-input');
+        this.showDanmaku = this.container.querySelector('.lemur-player-setting-show-danmaku');
+        this.showDanmakuToggle = this.container.querySelector('.lemur-player-show-danmaku-setting-input');
+        this.unlimitDanmaku = this.container.querySelector('.lemur-player-setting-danmaku-unlimited');
+        this.unlimitDanmakuToggle = this.container.querySelector('.lemur-player-danmaku-unlimited-setting-input');
         this.speed = this.container.querySelector('.lemur-player-setting-speed');
         this.speedItem = this.container.querySelectorAll('.lemur-player-setting-speed-item');
         this.danmakuOpacityBar = this.container.querySelector('.lemur-player-danmaku-bar-inner');
@@ -70,7 +70,7 @@ class Template {
         this.commentSendFill = this.container.querySelector('.lemur-player-send-icon path');
         this.commentColorSettingBox = this.container.querySelector('.lemur-player-comment-setting-color');
         this.browserFullButton = this.container.querySelector('.lemur-player-full-icon');
-        this.webFullButton = this.container.querySelector('.lemur-player-full-in-icon');
+        this.webFullButton = this.container.querySelector('.lemur-player-theater-mode-icon');
         this.menu = this.container.querySelector('.lemur-player-menu');
         this.menuItem = this.container.querySelectorAll('.lemur-player-menu-item');
         this.qualityList = this.container.querySelector('.lemur-player-quality-list');

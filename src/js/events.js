@@ -28,8 +28,6 @@ class Events {
             'waiting',
         ];
         this.playerEvents = [
-            'thumbnails_show',
-            'thumbnails_hide',
             'danmaku_show',
             'danmaku_hide',
             'danmaku_clear',

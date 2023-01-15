@@ -6,21 +6,21 @@
         <img src="{{ options.logo }}">
     </div>
     {{ /if }}
-    <div class="lemur-player-danmaku"{{ if options.danmaku && options.danmaku.bottm }} style="margin-bottom:{{ options.danmaku.bottm }}"{{ /if }}>
+    <div class="lemur-player-danmaku"{{ if options.danmaku && options.danmaku.bottom }} style="margin-bottom:{{ options.danmaku.bottom }}"{{ /if }}>
         <div class="lemur-player-danmaku-item lemur-player-danmaku-item--preload"></div>
     </div>
     <div class="lemur-player-bezel">
         <span class="lemur-player-bezel-icon"></span>
         {{ if options.danmaku }}
-        <span class="lemur-player-danloading">弹幕加载中</span>
+        <span class="lemur-player-danmaku-loading">弹幕加载中</span>
         {{ /if }}
-        <span class="diplayer-loading-icon">{{@ icons.loading }}</span>
+        <span class="lemur-player-loading-icon">{{@ icons.loading }}</span>
     </div>
 </div>
 <div class="lemur-player-controller-mask"></div>
 <div class="lemur-player-controller">
     <div class="lemur-player-icons lemur-player-comment-box">
-        <button class="lemur-player-icon lemur-player-comment-setting-icon" data-balloon="设置" data-balloon-pos="up">
+        <button class="lemur-player-icon lemur-player-comment-setting-icon">
             <span class="lemur-player-icon-content">{{@ icons.pallette }}</span>
         </button>
         <div class="lemur-player-comment-setting-box">
@@ -68,7 +68,7 @@
             </div>
         </div>
         <input class="lemur-player-comment-input" type="text" placeholder="发个友善的弹幕见证当下" maxlength="30">
-        <button class="lemur-player-icon lemur-player-send-icon" data-balloon="发送" data-balloon-pos="up">
+        <button class="lemur-player-icon lemur-player-send-icon">
             <span class="lemur-player-icon-content">{{@ icons.send }}</span>
         </button>
     </div>
@@ -80,10 +80,10 @@
             <button class="lemur-player-icon lemur-player-volume-icon">
                 <span class="lemur-player-icon-content">{{@ icons.volumeDown }}</span>
             </button>
-            <div class="lemur-player-volume-bar-wrap" data-balloon-pos="up">
+            <div class="lemur-player-volume-bar-wrap">
                 <div class="lemur-player-volume-bar">
                     <div class="lemur-player-volume-bar-inner" style="background: #fff;">
-                        <span class="lemur-player-thumb" style="background: #fff"></span>
+                        <span class="lemur-player-dot" style="background: #fff"></span>
                     </div>
                 </div>
             </div>
@@ -107,17 +107,17 @@
         </div>
         {{ /if }}
         {{ if options.airplay }}
-        <div class="lemur-player-icon lemur-player-airplay-icon" data-balloon="无线投屏" data-balloon-pos="up">
+        <div class="lemur-player-icon lemur-player-airplay-icon">
             <span class="lemur-player-icon-content">{{@ icons.airplay }}</span>
         </div>
         {{ /if }}
         <div class="lemur-player-comment">
-            <button class="lemur-player-icon lemur-player-comment-icon" data-balloon="发送弹幕" data-balloon-pos="up">
+            <button class="lemur-player-icon lemur-player-comment-icon">
                 <span class="lemur-player-icon-content">{{@ icons.comment }}</span>
             </button>
         </div>
         <div class="lemur-player-setting">
-            <button class="lemur-player-icon lemur-player-setting-icon" data-balloon="设置" data-balloon-pos="up">
+            <button class="lemur-player-icon lemur-player-setting-icon">
                 <span class="lemur-player-icon-content">{{@ icons.setting }}</span>
             </button>
             <div class="lemur-player-setting-box">
@@ -133,18 +133,18 @@
                             <label for="lemur-player-toggle"></label>
                         </div>
                     </div>
-                    <div class="lemur-player-setting-item lemur-player-setting-showdan">
+                    <div class="lemur-player-setting-item lemur-player-setting-show-danmaku">
                         <span class="lemur-player-label">显示弹幕</span>
                         <div class="lemur-player-toggle">
-                            <input class="lemur-player-showdan-setting-input" type="checkbox" name="lemur-player-toggle-dan">
+                            <input class="lemur-player-show-danmaku-setting-input" type="checkbox" name="lemur-player-toggle-dan">
                             <label for="lemur-player-toggle-dan"></label>
                         </div>
                     </div>
-                    <div class="lemur-player-setting-item lemur-player-setting-danunlimit">
+                    <div class="lemur-player-setting-item lemur-player-setting-danmaku-unlimited">
                         <span class="lemur-player-label">允许弹幕重叠</span>
                         <div class="lemur-player-toggle">
-                            <input class="lemur-player-danunlimit-setting-input" type="checkbox" name="lemur-player-toggle-danunlimit">
-                            <label for="lemur-player-toggle-danunlimit"></label>
+                            <input class="lemur-player-danmaku-unlimited-setting-input" type="checkbox" name="lemur-player-toggle-danmaku-unlimited">
+                            <label for="lemur-player-toggle-danmaku-unlimited"></label>
                         </div>
                     </div>
                     <div class="lemur-player-setting-item lemur-player-setting-danmaku">
@@ -152,12 +152,14 @@
                         <div class="lemur-player-danmaku-bar-wrap">
                             <div class="lemur-player-danmaku-bar">
                                 <div class="lemur-player-danmaku-bar-inner">
-                                    <span class="lemur-player-thumb"></span>
+                                    <span class="lemur-player-dot"></span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- 视频播放倍速设置面板 -->
                 <div class="lemur-player-setting-speed-panel">
                     {{ each options.playbackSpeed }}
                         <div class="lemur-player-setting-speed-item" data-speed="{{ $value }}">
@@ -167,22 +169,30 @@
                 </div>
             </div>
         </div>
+
+        <!-- 按钮: 剧场模式 -->
         <div class="lemur-player-full">
-            <button class="lemur-player-icon lemur-player-full-in-icon" data-balloon="网页全屏" data-balloon-pos="up">
-                <span class="lemur-player-icon-content">{{@ icons.fullWeb }}</span>
+            <button class="lemur-player-icon lemur-player-theater-mode-icon">
+                <span class="lemur-player-icon-content">{{@ icons.theaterMode }}</span>
             </button>
-            <button class="lemur-player-icon lemur-player-full-icon" data-balloon="全屏" data-balloon-pos="up">
+        </div>
+
+        <!-- 按钮: 全屏模式 -->
+        <div class="lemur-player-full">
+            <button class="lemur-player-icon lemur-player-full-icon">
                 <span class="lemur-player-icon-content">{{@ icons.full }}</span>
             </button>
         </div>
     </div>
+
+    <!-- 视频进度条 -->
     <div class="lemur-player-bar-wrap">
         <div class="lemur-player-bar-time hidden">00:00</div>
         <div class="lemur-player-bar-preview"></div>
         <div class="lemur-player-bar">
             <div class="lemur-player-loaded" style="width: 0;"></div>
             <div class="lemur-player-played" style="width: 0; background: #FF8CB0">
-                <span class="lemur-player-thumb" style="background: #FF8CB0"></span>
+                <span class="lemur-player-dot" style="background: #FF8CB0"></span>
             </div>
         </div>
     </div>
@@ -231,7 +241,14 @@
 <div class="lemur-player-menu">
     {{ each options.contextmenu }}
         <div class="lemur-player-menu-item">
-            <a{{ if $value.link }} target="_blank"{{ /if }} href="{{ $value.link || 'javascript:void(0);' }}">{{ if $value.key }} {{ tran($value.key) }}{{ /if }}{{ if $value.text }} {{$value.text}}{{ /if }}</a>
+            <a{{ if $value.link }} target="_blank"{{ /if }} href="{{ $value.link || 'javascript:void(0);' }}">
+                {{ if $value.key }}
+                    {{ $value.key }}
+                {{ /if }}
+                {{ if $value.text }}
+                    {{$value.text}}
+                {{ /if }}
+            </a>
         </div>
     {{ /each }}
 </div>

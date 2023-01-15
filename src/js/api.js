@@ -34,7 +34,7 @@ export default {
                             type: item[1],
                             color: item[2],
                             userID: item[3],
-                            text: item[4],
+                            text: item[4]
                         }))
                     );
             })
@@ -42,5 +42,5 @@ export default {
                 console.error(e);
                 options.error && options.error();
             });
-    },
+    }
 };

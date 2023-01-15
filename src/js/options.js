@@ -3,7 +3,7 @@ import defaultApiBackend from './api.js';
 export default (options) => {
     // default options
     const defaultOption = {
-        container: options.element || document.getElementsByClassName('lemur-player')[0],
+        container: options.element,
         autoplay: false,
         loop: false,
         lang: (navigator.language || navigator.browserLanguage).toLowerCase(),
@@ -16,8 +16,8 @@ export default (options) => {
         video: {},
         contextmenu: [],
         mutex: true,
-        pluginOptions: { hls: {}, flv: {}, dash: {}, webtorrent: {} },
-        preventClickToggle: false,
+        pluginOptions: { hls: {}, flv: {}, dash: {} },
+        preventClickToggle: false
     };
     for (const defaultKey in defaultOption) {
         if (defaultOption.hasOwnProperty(defaultKey) && !options.hasOwnProperty(defaultKey)) {

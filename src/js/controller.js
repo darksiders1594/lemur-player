@@ -1,5 +1,4 @@
 import utils from './utils';
-import Thumbnails from './thumbnails';
 import Icons from './icons';
 
 class Controller {
@@ -16,7 +15,6 @@ class Controller {
         }
 
         this.initPlayButton();
-        this.initThumbnails();
         this.initPlayedBar();
         this.initFullButton();
         this.initQualityButton();
@@ -54,27 +52,12 @@ class Controller {
         }
     }
 
-    initThumbnails() {
-        if (this.player.options.video.thumbnails) {
-            this.thumbnails = new Thumbnails({
-                container: this.player.template.barPreview,
-                barWidth: this.player.template.barWrap.offsetWidth,
-                url: this.player.options.video.thumbnails,
-                events: this.player.events,
-            });
-
-            this.player.on('loadedmetadata', () => {
-                this.thumbnails.resize(160, (this.player.video.videoHeight / this.player.video.videoWidth) * 160, this.player.template.barWrap.offsetWidth);
-            });
-        }
-    }
-
     initPlayedBar() {
         // 视频是否被自动暂停
         let isAutoPause = false;
 
         // 进度条正在被拖动
-        const thumbMove = (e) => {
+        const videoProgressMove = (e) => {
             // 视频是否处于暂停的状态
             let isPause = this.player.video.paused;
             // 如果视频正在播放, 则将其自动暂停
@@ -90,9 +73,9 @@ class Controller {
         };
 
         // 进度条拖动结束
-        const thumbUp = (e) => {
-            document.removeEventListener(utils.nameMap.dragEnd, thumbUp);
-            document.removeEventListener(utils.nameMap.dragMove, thumbMove);
+        const videoProgressUpdate = (e) => {
+            document.removeEventListener(utils.nameMap.dragEnd, videoProgressUpdate);
+            document.removeEventListener(utils.nameMap.dragMove, videoProgressMove);
             let percentage = (e.clientX - utils.getBoundingClientRectViewLeft(this.player.template.playedBarWrap)) / this.player.template.playedBarWrap.clientWidth;
             percentage = Math.max(percentage, 0);
             percentage = Math.min(percentage, 1);
@@ -109,22 +92,19 @@ class Controller {
 
         this.player.template.playedBarWrap.addEventListener(utils.nameMap.dragStart, () => {
             this.player.timer.disable('progress');
-            document.addEventListener(utils.nameMap.dragMove, thumbMove);
-            document.addEventListener(utils.nameMap.dragEnd, thumbUp);
+            document.addEventListener(utils.nameMap.dragMove, videoProgressMove);
+            document.addEventListener(utils.nameMap.dragEnd, videoProgressUpdate);
         });
 
         this.player.template.playedBarWrap.addEventListener(utils.nameMap.dragMove, (e) => {
             if (this.player.video.duration) {
                 const px = this.player.template.playedBarWrap.getBoundingClientRect().left;
-                const tx = (e.clientX || e.changedTouches[0].clientX) - px;
+                const tx = e.clientX - px;
                 if (tx < 0 || tx > this.player.template.playedBarWrap.offsetWidth) {
                     return;
                 }
                 const time = this.player.video.duration * (tx / this.player.template.playedBarWrap.offsetWidth);
-                if (utils.isMobile) {
-                    this.thumbnails && this.thumbnails.show();
-                }
-                this.thumbnails && this.thumbnails.move(tx);
+
                 this.player.template.playedBarTime.style.left = `${tx - (time >= 3600 ? 25 : 20)}px`;
                 this.player.template.playedBarTime.innerText = utils.secondToTime(time);
                 this.player.template.playedBarTime.classList.remove('hidden');
@@ -132,22 +112,17 @@ class Controller {
         });
 
         this.player.template.playedBarWrap.addEventListener(utils.nameMap.dragEnd, () => {
-            if (utils.isMobile) {
-                this.thumbnails && this.thumbnails.hide();
-            }
         });
 
         if (!utils.isMobile) {
             this.player.template.playedBarWrap.addEventListener('mouseenter', () => {
                 if (this.player.video.duration) {
-                    this.thumbnails && this.thumbnails.show();
                     this.player.template.playedBarTime.classList.remove('hidden');
                 }
             });
 
             this.player.template.playedBarWrap.addEventListener('mouseleave', () => {
                 if (this.player.video.duration) {
-                    this.thumbnails && this.thumbnails.hide();
                     this.player.template.playedBarTime.classList.add('hidden');
                 }
             });
@@ -180,7 +155,7 @@ class Controller {
 
         this.player.template.volumeBarWrapWrap.addEventListener('click', (event) => {
             const e = event || window.event;
-            const percentage = ((e.clientX || e.changedTouches[0].clientX) - utils.getBoundingClientRectViewLeft(this.player.template.volumeBarWrap)) / vWidth;
+            const percentage = (e.clientX - utils.getBoundingClientRectViewLeft(this.player.template.volumeBarWrap)) / vWidth;
             this.player.volume(percentage);
         });
         this.player.template.volumeBarWrapWrap.addEventListener(utils.nameMap.dragStart, () => {

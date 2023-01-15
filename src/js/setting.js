@@ -82,7 +82,7 @@ class Setting {
 
             const danmakuMove = (event) => {
                 const e = event || window.event;
-                let percentage = ((e.clientX || e.changedTouches[0].clientX) - utils.getBoundingClientRectViewLeft(this.player.template.danmakuOpacityBarWrap)) / dWidth;
+                let percentage = (e.clientX - utils.getBoundingClientRectViewLeft(this.player.template.danmakuOpacityBarWrap)) / dWidth;
                 percentage = Math.max(percentage, 0);
                 percentage = Math.min(percentage, 1);
                 this.player.danmaku.opacity(percentage);
@@ -95,7 +95,7 @@ class Setting {
 
             this.player.template.danmakuOpacityBarWrapWrap.addEventListener('click', (event) => {
                 const e = event || window.event;
-                let percentage = ((e.clientX || e.changedTouches[0].clientX) - utils.getBoundingClientRectViewLeft(this.player.template.danmakuOpacityBarWrap)) / dWidth;
+                let percentage = (e.clientX - utils.getBoundingClientRectViewLeft(this.player.template.danmakuOpacityBarWrap)) / dWidth;
                 percentage = Math.max(percentage, 0);
                 percentage = Math.min(percentage, 1);
                 this.player.danmaku.opacity(percentage);
