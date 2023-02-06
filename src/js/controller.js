@@ -80,7 +80,7 @@ class Controller {
             percentage = Math.max(percentage, 0);
             percentage = Math.min(percentage, 1);
             this.player.bar.set('played', percentage, 'width');
-            this.player.seek(this.player.bar.get('played') * this.player.video.duration);
+            this.player.videoSeek(this.player.bar.get('played') * this.player.video.duration);
             this.player.timer.enable('progress');
 
             // 如果视频曾被自动暂停, 则此时恢复播放

@@ -118,14 +118,15 @@
         }
     }
     &.lemur-player-fulled {
-        position: relative !important;
+        position: fixed !important;
         z-index: 100000;
         left: 0 !important;
         top: 0 !important;
         min-width: 960px !important;
-        width: 100% !important;
-        height: 56.25vw !important;
         min-height: 540px !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
         max-height: 100vh !important;
     }
     &.lemur-player-mobile {
@@ -159,7 +160,8 @@
 
 // To hide scroll bar, apply this class to <body>
 .lemur-player-web-fullscreen-fix {
-    position: relative;
+    position: fixed;
+    top: 0;
     left: 0;
     margin: 0;
     padding: 0;

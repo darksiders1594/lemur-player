@@ -1,7 +1,7 @@
 {
   "name": "lemurplayer",
   "version": "1.0.0",
-  "description": "HTML5 Bullet Screen Video Player",
+  "description": "HTML5 Danmaku Video Player",
   "main": "dist/LemurPlayer.js",
   "scripts": {
     "dev-build": "webpack-dev-server --config webpack/development.config.js",

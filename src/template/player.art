@@ -1,11 +1,6 @@
 <div class="lemur-player-mask"></div>
 <div class="lemur-player-video-wrap">
     {{ include './video.art' video }}
-    {{ if options.logo }}
-    <div class="lemur-player-logo">
-        <img src="{{ options.logo }}">
-    </div>
-    {{ /if }}
     <div class="lemur-player-danmaku"{{ if options.danmaku && options.danmaku.bottom }} style="margin-bottom:{{ options.danmaku.bottom }}"{{ /if }}>
         <div class="lemur-player-danmaku-item lemur-player-danmaku-item--preload"></div>
     </div>

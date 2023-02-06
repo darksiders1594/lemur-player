@@ -24,12 +24,12 @@ class HotKey {
                         break;
                     case 37:
                         event.preventDefault();
-                        this.player.seek(this.player.video.currentTime - 5);
+                        this.player.videoSeek(this.player.video.currentTime - 5);
                         this.player.controller.setAutoHide();
                         break;
                     case 39:
                         event.preventDefault();
-                        this.player.seek(this.player.video.currentTime + 5);
+                        this.player.videoSeek(this.player.video.currentTime + 5);
                         this.player.controller.setAutoHide();
                         break;
                     case 38:

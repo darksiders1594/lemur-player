@@ -23,6 +23,9 @@ let index = 0;
 const instances = [];
 
 class LemurPlayer {
+    dashPlayer;
+    isFirstPlay = true;
+    isEnded = false;
     /**
      * LemurPlayer constructor function
      *
@@ -102,7 +105,7 @@ class LemurPlayer {
         }
 
         this.setting = new Setting(this);
-        this.plugins = {};
+
         this.docClickFun = () => {
             this.focus = false;
         };
@@ -120,7 +123,12 @@ class LemurPlayer {
 
         this.contextmenu = new ContextMenu(this);
 
-        this.initVideo(this.video, (this.quality && this.quality.type) || this.options.video.type, this.options.autoplay);
+        (() => {
+            this.dashPlayer = dashjs.MediaPlayer().create();
+            this.dashPlayer.initialize(this.video, this.video.src, false);
+        })();
+
+        this.initVideo(this.video, this.dashPlayer);
 
         this.infoPanel = new InfoPanel(this);
 
@@ -131,20 +139,20 @@ class LemurPlayer {
     /**
      * Seek video
      */
-    seek(time) {
+    videoSeek(time) {
         time = Math.max(time, 0);
-        if (this.video.duration) {
-            time = Math.min(time, this.video.duration);
+        if (this.dashPlayer.duration()) {
+            time = Math.min(time, this.dashPlayer.duration());
         }
 
-        this.video.currentTime = time;
+        this.dashPlayer.seek(time);
 
         if (this.danmaku) {
             this.danmaku.seek();
             this.danmaku.load();
         }
 
-        this.bar.set('played', time / this.video.duration, 'width');
+        this.bar.set('played', time / this.dashPlayer.duration(), 'width');
         this.template.ptime.innerHTML = utils.secondToTime(time);
     }
 
@@ -153,7 +161,7 @@ class LemurPlayer {
      */
     play(fromNative) {
         this.paused = false;
-        if (this.video.paused && !utils.isMobile) {
+        if (this.dashPlayer.isPaused && !utils.isMobile) {
             this.bezel.switch(Icons.play);
         }
 
@@ -161,7 +169,7 @@ class LemurPlayer {
         this.template.mobilePlayButton.innerHTML = Icons.pause;
 
         if (!fromNative) {
-            const playedPromise = Promise.resolve(this.video.play());
+            const playedPromise = Promise.resolve(this.dashPlayer.play());
             playedPromise
                 .catch(() => {
                     this.pause();
@@ -191,14 +199,14 @@ class LemurPlayer {
         this.paused = true;
         this.container.classList.remove('lemur-player-loading');
 
-        if (!this.video.paused && !utils.isMobile) {
+        if (!this.dashPlayer.isPaused() && !utils.isMobile) {
             this.bezel.switch(Icons.pause);
         }
 
         this.template.playButton.innerHTML = Icons.play;
         this.template.mobilePlayButton.innerHTML = Icons.play;
         if (!fromNative) {
-            this.video.pause();
+            this.dashPlayer.pause();
         }
         this.timer.disable('loading');
         this.container.classList.remove('lemur-player-playing');
@@ -226,13 +234,14 @@ class LemurPlayer {
         if (!isNaN(percentage)) {
             percentage = Math.max(percentage, 0);
             percentage = Math.min(percentage, 1);
+
             this.bar.set('volume', percentage, 'width');
 
             if (!noStorage) {
                 this.user.set('volume', percentage);
             }
 
-            this.video.volume = percentage;
+            this.dashPlayer.setVolume(percentage);
             if (this.video.muted) {
                 this.video.muted = false;
             }
@@ -246,7 +255,7 @@ class LemurPlayer {
      * Toggle between play and pause
      */
     toggle() {
-        if (this.video.paused) {
+        if (this.dashPlayer.isPaused()) {
             this.play();
         } else {
             this.pause();
@@ -260,117 +269,80 @@ class LemurPlayer {
         this.events.on(name, callback);
     }
 
-    initMSE(video, type, isAutoplay) {
-        this.type = type;
+    /**
+     * 此方法因当前播放器仅需要 MPEG-DASH 协议, 暂时停用
+     */
+    // initMSE(video, type, isAutoplay) {
+    //     this.type = type;
+    //
+    //     if (this.type === 'auto') {
+    //         if (/m3u8(#|\?|$)/i.exec(video.src)) {
+    //             this.type = 'hls';
+    //         } else if (/.flv(#|\?|$)/i.exec(video.src)) {
+    //             this.type = 'flv';
+    //         } else if (/.mpd(#|\?|$)/i.exec(video.src)) {
+    //             this.type = 'dash';
+    //         } else {
+    //             this.type = 'normal';
+    //         }
+    //     }
+    //
+    //     if (this.type === 'hls' && (video.canPlayType('application/x-mpegURL') || video.canPlayType('application/vnd.apple.mpegURL'))) {
+    //         this.type = 'normal';
+    //     }
+    //
+    //     switch (this.type) {
+    //         // https://github.com/Dash-Industry-Forum/dash.js
+    //         case 'dash':
+    //             if (window.dashjs) {
+    //                 window.dashjs.MediaPlayer().create().initialize(video, video.src, isAutoplay);
+    //                 this.events.on('destroy', () => {
+    //                     window.dashjs.MediaPlayer().reset();
+    //                 });
+    //             } else {
+    //                 this.notice("Error: Can't find dashjs.");
+    //             }
+    //             break;
+    //         // https://github.com/video-dev/hls.js
+    //         case 'hls':
+    //             if (window.Hls) {
+    //                 if (window.Hls.isSupported()) {
+    //                     const options = this.options.pluginOptions.hls;
+    //                     const hls = new window.Hls(options);
+    //                     this.plugins.hls = hls;
+    //                     hls.loadSource(video.src);
+    //                     hls.attachMedia(video);
+    //                     this.events.on('destroy', () => {
+    //                         hls.destroy();
+    //                         delete this.plugins.hls;
+    //                     });
+    //                 } else {
+    //                     this.notice('Error: Hls is not supported.');
+    //                 }
+    //             } else {
+    //                 this.notice("Error: Can't find Hls.");
+    //             }
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }
 
-        if (this.type === 'auto') {
-            if (/m3u8(#|\?|$)/i.exec(video.src)) {
-                this.type = 'hls';
-            } else if (/.flv(#|\?|$)/i.exec(video.src)) {
-                this.type = 'flv';
-            } else if (/.mpd(#|\?|$)/i.exec(video.src)) {
-                this.type = 'dash';
-            } else {
-                this.type = 'normal';
-            }
-        }
+    initVideo(video, dashPlayer) {
 
-        if (this.type === 'hls' && (video.canPlayType('application/x-mpegURL') || video.canPlayType('application/vnd.apple.mpegURL'))) {
-            this.type = 'normal';
-        }
-
-        switch (this.type) {
-            // https://github.com/Dash-Industry-Forum/dash.js
-            case 'dash':
-                if (window.dashjs) {
-                    window.dashjs.MediaPlayer().create().initialize(video, video.src, isAutoplay);
-                    this.events.on('destroy', () => {
-                        window.dashjs.MediaPlayer().reset();
-                    });
-                } else {
-                    this.notice("Error: Can't find dashjs.");
-                }
-                break;
-            // https://github.com/video-dev/hls.js
-            case 'hls':
-                if (window.Hls) {
-                    if (window.Hls.isSupported()) {
-                        const options = this.options.pluginOptions.hls;
-                        const hls = new window.Hls(options);
-                        this.plugins.hls = hls;
-                        hls.loadSource(video.src);
-                        hls.attachMedia(video);
-                        this.events.on('destroy', () => {
-                            hls.destroy();
-                            delete this.plugins.hls;
-                        });
-                    } else {
-                        this.notice('Error: Hls is not supported.');
-                    }
-                } else {
-                    this.notice("Error: Can't find Hls.");
-                }
-                break;
-            // https://github.com/Bilibili/flv.js
-            case 'flv':
-                if (window.flvjs) {
-                    if (window.flvjs.isSupported()) {
-                        const flvPlayer = window.flvjs.createPlayer(
-                            Object.assign(this.options.pluginOptions.flv.mediaDataSource || {}, {
-                                type: 'flv',
-                                url: video.src,
-                                isLive: false,
-                                cors: false,
-                                duration: video.duration
-                            }),
-                            this.options.pluginOptions.flv.config
-                        );
-                        this.plugins.flvjs = flvPlayer;
-                        flvPlayer.attachMediaElement(video);
-                        flvPlayer.load();
-                        this.events.on('destroy', () => {
-                            flvPlayer.unload();
-                            flvPlayer.detachMediaElement();
-                            flvPlayer.destroy();
-                            delete this.plugins.flvjs;
-                        });
-                    } else {
-                        this.notice('Error: flvjs is not supported.');
-                    }
-                } else {
-                    this.notice("Error: Can't find flvjs.");
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    initVideo(video, type, isAutoplay) {
-        this.initMSE(video, type, isAutoplay);
-        /**
-         * video events
-         */
         // show video time: the metadata has loaded or changed
         this.on('durationchange', () => {
             // compatibility: Android browsers will output 1 or Infinity at first
-            if (video.duration !== 1 && video.duration !== Infinity) {
-                this.template.dtime.innerHTML = utils.secondToTime(video.duration);
+            if (dashPlayer.duration() !== 1 && dashPlayer.duration() !== Infinity) {
+                this.template.dtime.innerHTML = utils.secondToTime(dashPlayer.duration());
             }
         });
 
-        // show video loaded bar: to inform interested parties of progress downloading the media
         this.on('progress', () => {
-            // 判断进度条缓冲区是否存在
-            if (video.buffered.length !== null) {
-                // 通过迭代找到和当前视频时间最接近的缓冲起始位置
-                for (let index = video.buffered.length - 1; index >= 0; index--) {
-                    if (video.buffered.start(index) <= video.currentTime) {
-                        const percentage = video.buffered.end(index) / video.duration;
-                        this.bar.set('loaded', percentage, 'width');
-                        break;
-                    }
-                }
+            // 判断视频缓冲区是否存在
+            if (!isNaN(dashPlayer.getBufferLength('video'))) {
+                const percentage = (video.currentTime + dashPlayer.getBufferLength('video')) / dashPlayer.duration();
+                this.bar.set('loaded', percentage, 'width');
             } else {
                 this.bar.set('loaded', 0, 'width');
             }
@@ -382,37 +354,53 @@ class LemurPlayer {
                 // Not a video load error, may be poster load failed, see #307
                 return;
             }
-            this.notice && this.notice('视频加载失败', -1);
+            this.notice && this.notice('视频加载失败');
         });
 
-        // video end
         this.on('ended', () => {
             this.bar.set('played', 1, 'width');
-            if (!this.setting.loop) {
-                this.pause();
-            } else {
-                this.seek(0);
-                this.play();
+            this.pause();
+            this.isFirstPlay = false;
+
+            if (this.setting.loop) {
+                this.videoSeek(0);
+                this.isEnded = true;
             }
             if (this.danmaku) {
-                this.danmaku.danIndex = 0;
+                this.danmaku.clear();
             }
         });
 
         this.on('play', () => {
-            if (this.paused) {
+            if (this.dashPlayer.isPaused()) {
                 this.play(true);
             }
         });
 
         this.on('pause', () => {
-            if (!this.paused) {
+            if (!this.dashPlayer.isPaused()) {
                 this.pause(true);
             }
         });
 
+        this.on('canplay', () => {
+            if (this.options.autoplay && this.isFirstPlay) {
+                this.isFirstPlay = false;
+                video.muted = true;
+                this.template.volumeIcon.innerHTML = Icons.volumeOff;
+                this.bar.set('volume', 0, 'width');
+                this.notice('当前页面已自动静音啦, 您可以手动开启哦~', 5000);
+                this.play();
+            }
+
+            if (this.isEnded && this.setting.loop && !this.isFirstPlay) {
+                this.isEnded = false;
+                this.play();
+            }
+        });
+
         this.on('timeupdate', () => {
-            this.bar.set('played', this.video.currentTime / this.video.duration, 'width');
+            this.bar.set('played', this.video.currentTime / dashPlayer.duration(), 'width');
             const currentTime = utils.secondToTime(this.video.currentTime);
             if (this.template.ptime.innerHTML !== currentTime) {
                 this.template.ptime.innerHTML = currentTime;
@@ -420,8 +408,8 @@ class LemurPlayer {
         });
 
         for (let i = 0; i < this.events.videoEvents.length; i++) {
-            video.addEventListener(this.events.videoEvents[i], () => {
-                this.events.trigger(this.events.videoEvents[i]);
+            video.addEventListener(this.events.videoEvents[i], (e) => {
+                this.events.trigger(this.events.videoEvents[i], e);
             });
         }
 
@@ -429,68 +417,68 @@ class LemurPlayer {
 
     }
 
-    switchQuality(index) {
-        index = typeof index === 'string' ? parseInt(index) : index;
-        if (this.qualityIndex === index || this.switchingQuality) {
-            return;
-        } else {
-            this.prevIndex = this.qualityIndex;
-            this.qualityIndex = index;
-        }
-        this.switchingQuality = true;
-        this.quality = this.options.video.quality[index];
-        this.template.qualityButton.innerHTML = this.quality.name;
-
-        let paused = this.video.paused;
-        this.video.pause();
-        const videoHTML = tplVideo({
-            current: false,
-            pic: null,
-            preload: 'auto',
-            url: this.quality.url,
-        });
-        const videoEle = new DOMParser().parseFromString(videoHTML, 'text/html').body.firstChild;
-        this.template.videoWrap.insertBefore(videoEle, this.template.videoWrap.getElementsByTagName('div')[0]);
-        this.prevVideo = this.video;
-        this.video = videoEle;
-        this.initVideo(this.video, this.quality.type || this.options.video.type);
-        this.seek(this.prevVideo.currentTime);
-        this.events.trigger('quality_start', this.quality);
-
-        this.on('canplay', () => {
-            if (this.prevVideo) {
-                if (this.video.currentTime !== this.prevVideo.currentTime) {
-                    this.seek(this.prevVideo.currentTime);
-                    return;
-                }
-                this.template.videoWrap.removeChild(this.prevVideo);
-                this.video.classList.add('lemur-player-video-current');
-                this.prevVideo = null;
-                this.switchingQuality = false;
-                this.events.trigger('quality_end');
-                if (!paused) {
-                    this.video.play();
-                }
-            }
-        });
-
-        this.on('error', () => {
-            if (!this.video.error) {
-                return;
-            }
-            if (this.prevVideo) {
-                this.template.videoWrap.removeChild(this.video);
-                this.video = this.prevVideo;
-                if (!paused) {
-                    this.video.play();
-                }
-                this.qualityIndex = this.prevIndex;
-                this.quality = this.options.video.quality[this.qualityIndex];
-                this.prevVideo = null;
-                this.switchingQuality = false;
-            }
-        });
-    }
+    // switchQuality(index) {
+    //     index = typeof index === 'string' ? parseInt(index) : index;
+    //     if (this.qualityIndex === index || this.switchingQuality) {
+    //         return;
+    //     } else {
+    //         this.prevIndex = this.qualityIndex;
+    //         this.qualityIndex = index;
+    //     }
+    //     this.switchingQuality = true;
+    //     this.quality = this.options.video.quality[index];
+    //     this.template.qualityButton.innerHTML = this.quality.name;
+    //
+    //     let paused = this.video.paused;
+    //     this.video.pause();
+    //     const videoHTML = tplVideo({
+    //         current: false,
+    //         pic: null,
+    //         preload: 'auto',
+    //         url: this.quality.url,
+    //     });
+    //     const videoEle = new DOMParser().parseFromString(videoHTML, 'text/html').body.firstChild;
+    //     this.template.videoWrap.insertBefore(videoEle, this.template.videoWrap.getElementsByTagName('div')[0]);
+    //     this.prevVideo = this.video;
+    //     this.video = videoEle;
+    //     this.initVideo(this.video, this.quality.type || this.options.video.type);
+    //     this.videoSeek(this.prevVideo.currentTime);
+    //     this.events.trigger('quality_start', this.quality);
+    //
+    //     this.on('canplay', () => {
+    //         if (this.prevVideo) {
+    //             if (this.video.currentTime !== this.prevVideo.currentTime) {
+    //                 this.videoSeek(this.prevVideo.currentTime);
+    //                 return;
+    //             }
+    //             this.template.videoWrap.removeChild(this.prevVideo);
+    //             this.video.classList.add('lemur-player-video-current');
+    //             this.prevVideo = null;
+    //             this.switchingQuality = false;
+    //             this.events.trigger('quality_end');
+    //             if (!paused) {
+    //                 this.play();
+    //             }
+    //         }
+    //     });
+    //
+    //     this.on('error', () => {
+    //         if (!this.video.error) {
+    //             return;
+    //         }
+    //         if (this.prevVideo) {
+    //             this.template.videoWrap.removeChild(this.video);
+    //             this.video = this.prevVideo;
+    //             if (!paused) {
+    //                 this.play();
+    //             }
+    //             this.qualityIndex = this.prevIndex;
+    //             this.quality = this.options.video.quality[this.qualityIndex];
+    //             this.prevVideo = null;
+    //             this.switchingQuality = false;
+    //         }
+    //     });
+    // }
 
     notice(text, time = 2000, opacity = 0.8) {
 

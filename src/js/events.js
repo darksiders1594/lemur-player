@@ -1,31 +1,21 @@
 class Events {
+    events;
+    videoEvents;
+    playerEvents;
+
     constructor() {
         this.events = {};
 
         this.videoEvents = [
-            'abort',
             'canplay',
             'canplaythrough',
             'durationchange',
-            'emptied',
             'ended',
             'error',
-            'loadeddata',
-            'loadedmetadata',
-            'loadstart',
-            'mozaudioavailable',
             'pause',
             'play',
-            'playing',
             'progress',
-            'ratechange',
-            'seeked',
-            'seeking',
-            'stalled',
-            'suspend',
-            'timeupdate',
-            'volumechange',
-            'waiting',
+            'timeupdate'
         ];
         this.playerEvents = [
             'danmaku_show',
@@ -45,21 +35,24 @@ class Events {
             'fullscreen',
             'fullscreen_cancel',
             'webfullscreen',
-            'webfullscreen_cancel',
+            'webfullscreen_cancel'
         ];
     }
 
     on(name, callback) {
         if (this.type(name) && typeof callback === 'function') {
-            if (!this.events[name]) {
+            // 判断 name 属性是否在 events 对象中存在
+            if (!this.events.hasOwnProperty(name)) {
+                // 向 events 对象中添加属性, 其对应的值初始化为数组类型
                 this.events[name] = [];
             }
+            // 在数组的末尾插入 callback 函数
             this.events[name].push(callback);
         }
     }
 
     trigger(name, info) {
-        if (this.events[name] && this.events[name].length) {
+        if (this.events[name] && this.events[name].length > 0) {
             for (let i = 0; i < this.events[name].length; i++) {
                 this.events[name][i](info);
             }
