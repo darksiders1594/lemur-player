@@ -9,7 +9,7 @@ export default (options) => {
         lang: (navigator.language || navigator.browserLanguage).toLowerCase(),
         airplay: true,
         hotkey: true,
-        preload: 'metadata',
+        preload: 'auto',
         volume: 0.7,
         playbackSpeed: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
         apiBackend: defaultApiBackend,

@@ -35,11 +35,17 @@ class Timer {
                 // whether the video is buffering
                 currentPlayPos = this.player.video.currentTime;
                 if (!bufferingDetected && currentPlayPos === lastPlayPos && !this.player.video.paused) {
+                    this.player.container.classList.remove('lemur-player-playing');
+                    this.player.container.classList.add('lemur-player-paused');
                     this.player.container.classList.add('lemur-player-loading');
+                    this.player.danmaku.pause();
                     bufferingDetected = true;
                 }
                 if (bufferingDetected && currentPlayPos > lastPlayPos && !this.player.video.paused) {
+                    this.player.container.classList.remove('lemur-player-paused');
+                    this.player.container.classList.add('lemur-player-playing');
                     this.player.container.classList.remove('lemur-player-loading');
+                    this.player.danmaku.play();
                     bufferingDetected = false;
                 }
                 lastPlayPos = currentPlayPos;

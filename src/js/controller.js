@@ -142,25 +142,23 @@ class Controller {
     initVolumeButton() {
         const vWidth = 50;
 
-        const volumeMove = (event) => {
-            const e = event || window.event;
+        const volumeMove = (e) => {
             const percentage = ((e.clientX) - utils.getBoundingClientRectViewLeft(this.player.template.volumeBarWrap)) / vWidth;
             this.player.volume(percentage);
         };
         const volumeUp = () => {
-            document.removeEventListener(utils.nameMap.dragEnd, volumeUp);
-            document.removeEventListener(utils.nameMap.dragMove, volumeMove);
+            document.removeEventListener('mouseup', volumeUp);
+            document.removeEventListener('mousemove', volumeMove);
             this.player.template.volumeButton.classList.remove('lemur-player-volume-active');
         };
 
-        this.player.template.volumeBarWrapWrap.addEventListener('click', (event) => {
-            const e = event || window.event;
+        this.player.template.volumeBarWrapWrap.addEventListener('click', (e) => {
             const percentage = (e.clientX - utils.getBoundingClientRectViewLeft(this.player.template.volumeBarWrap)) / vWidth;
             this.player.volume(percentage);
         });
-        this.player.template.volumeBarWrapWrap.addEventListener(utils.nameMap.dragStart, () => {
-            document.addEventListener(utils.nameMap.dragMove, volumeMove);
-            document.addEventListener(utils.nameMap.dragEnd, volumeUp);
+        this.player.template.volumeBarWrapWrap.addEventListener('mousedown', () => {
+            document.addEventListener('mousemove', volumeMove);
+            document.addEventListener('mouseup', volumeUp);
             this.player.template.volumeButton.classList.add('lemur-player-volume-active');
         });
         this.player.template.volumeButtonIcon.addEventListener('click', () => {

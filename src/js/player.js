@@ -20,11 +20,10 @@ import InfoPanel from './info-panel';
 import tplVideo from '../template/video.art';
 
 let index = 0;
-const instances = [];
 
 class LemurPlayer {
     dashPlayer;
-    isFirstPlay = true;
+    isFirstCanPlay = true;
     isEnded = false;
     /**
      * LemurPlayer constructor function
@@ -133,7 +132,6 @@ class LemurPlayer {
         this.infoPanel = new InfoPanel(this);
 
         index++;
-        instances.push(this);
     }
 
     /**
@@ -159,7 +157,7 @@ class LemurPlayer {
     /**
      * Play video
      */
-    play(fromNative) {
+    play(fromNative, isAutoPlay) {
         this.paused = false;
         if (this.dashPlayer.isPaused && !utils.isMobile) {
             this.bezel.switch(Icons.play);
@@ -169,25 +167,27 @@ class LemurPlayer {
         this.template.mobilePlayButton.innerHTML = Icons.pause;
 
         if (!fromNative) {
-            const playedPromise = Promise.resolve(this.dashPlayer.play());
+            const playedPromise = Promise.resolve(this.video.play());
             playedPromise
                 .catch(() => {
-                    this.pause();
+                    if (isAutoPlay) {
+                        this.video.muted = true;
+                        this.template.volumeIcon.innerHTML = Icons.volumeOff;
+                        this.bar.set('volume', 0, 'width');
+                        this.notice('当前页面已自动静音啦, 您可以手动开启哦~', 5000);
+                        this.dashPlayer.play();
+                    } else {
+                        this.pause();
+                    }
                 })
                 .then(() => {});
         }
         this.timer.enable('loading');
         this.container.classList.remove('lemur-player-paused');
         this.container.classList.add('lemur-player-playing');
+
         if (this.danmaku) {
             this.danmaku.play();
-        }
-        if (this.options.mutex) {
-            for (let i = 0; i < instances.length; i++) {
-                if (this !== instances[i]) {
-                    instances[i].pause();
-                }
-            }
         }
 
     }
@@ -214,6 +214,7 @@ class LemurPlayer {
         if (this.danmaku) {
             this.danmaku.pause();
         }
+
     }
 
     switchVolumeIcon() {
@@ -354,14 +355,12 @@ class LemurPlayer {
                 // Not a video load error, may be poster load failed, see #307
                 return;
             }
-            this.notice && this.notice('视频加载失败');
+            this.notice && this.notice('加载异常, 正在重新请求视频地址');
         });
 
         this.on('ended', () => {
             this.bar.set('played', 1, 'width');
             this.pause();
-            this.isFirstPlay = false;
-
             if (this.setting.loop) {
                 this.videoSeek(0);
                 this.isEnded = true;
@@ -371,39 +370,51 @@ class LemurPlayer {
             }
         });
 
-        this.on('play', () => {
-            if (this.dashPlayer.isPaused()) {
-                this.play(true);
-            }
-        });
-
-        this.on('pause', () => {
-            if (!this.dashPlayer.isPaused()) {
-                this.pause(true);
-            }
-        });
+        // this.on('play', () => {
+        //     if (this.dashPlayer.isPaused()) {
+        //         this.play(true);
+        //     }
+        // });
+        //
+        // this.on('pause', () => {
+        //     if (!this.dashPlayer.isPaused()) {
+        //         console.log('莫名其妙的暂停事件');
+        //         this.pause(true);
+        //     }
+        // });
 
         this.on('canplay', () => {
-            if (this.options.autoplay && this.isFirstPlay) {
-                this.isFirstPlay = false;
-                video.muted = true;
-                this.template.volumeIcon.innerHTML = Icons.volumeOff;
-                this.bar.set('volume', 0, 'width');
-                this.notice('当前页面已自动静音啦, 您可以手动开启哦~', 5000);
-                this.play();
+
+            if (this.isFirstCanPlay) {
+                this.isFirstCanPlay = false;
+                if (this.options.autoplay) {
+                    this.play(false, true);
+                }
             }
 
-            if (this.isEnded && this.setting.loop && !this.isFirstPlay) {
+            if (this.isEnded && this.setting.loop) {
+
                 this.isEnded = false;
                 this.play();
             }
         });
 
         this.on('timeupdate', () => {
-            this.bar.set('played', this.video.currentTime / dashPlayer.duration(), 'width');
-            const currentTime = utils.secondToTime(this.video.currentTime);
-            if (this.template.ptime.innerHTML !== currentTime) {
-                this.template.ptime.innerHTML = currentTime;
+            const currentTime = this.video.currentTime;
+
+            this.bar.set('played', currentTime / dashPlayer.duration(), 'width');
+            const timeStamp = utils.secondToTime(currentTime);
+
+            if (this.template.ptime.innerHTML !== timeStamp) {
+                this.template.ptime.innerHTML = timeStamp;
+            }
+            if (this.danmaku && this.danmaku.paused) {
+                this.danmaku.play();
+            }
+
+            // 判断视频是否播放结束, 允许误差在0.01范围之内, 用于预防在拖动进度条时, 一定几率导致 ended 事件未触发
+            if (Math.abs(currentTime - dashPlayer.duration()) < 0.01) {
+                this.video.dispatchEvent(new Event('ended'));
             }
         });
 
@@ -515,7 +526,6 @@ class LemurPlayer {
     }
 
     destroy() {
-        instances.splice(instances.indexOf(this), 1);
         this.pause();
         document.removeEventListener('click', this.docClickFun, true);
         this.container.removeEventListener('click', this.containerClickFun, true);
